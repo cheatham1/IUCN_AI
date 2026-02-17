@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plastic Waste in Small Island Developing States — Caribbean & Pacific</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --ocean-deep: #0b1d3a;
+    --ocean-mid: #163a6b;
+    --caribbean: #00b4d8;
+    --pacific: #e07a5f;
+    --sand: #f4f1de;
+    --coral: #e07a5f;
+    --seafoam: #81b29a;
+    --warning: #f2cc8f;
+    --text: #e8e4d9;
+    --text-muted: #9aa5b4;
+    --card-bg: rgba(22,58,107,0.45);
+    --card-border: rgba(0,180,216,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--ocean-deep);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated ocean gradient background */
+  body::before {
+    content:'';
+    position:fixed; top:0; left:0; right:0; bottom:0;
+    background: 
+      radial-gradient(ellipse at 20% 80%, rgba(0,180,216,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(224,122,95,0.06) 0%, transparent 50%),
+      linear-gradient(180deg, #0b1d3a 0%, #0d2847 40%, #0b1d3a 100%);
+    z-index:-1;
+  }
+
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* Header */
+  .hero {
+    text-align: center;
+    padding: 3rem 0 2rem;
+    position: relative;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.6rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--caribbean) 0%, var(--sand) 50%, var(--coral) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+
+  .hero .subtitle {
+    font-size: 1rem;
+    color: var(--text-muted);
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .hero .source-tag {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.3rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--card-border);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    background: var(--card-bg);
+  }
+
+  /* Region Legend */
+  .region-legend {
+    display:flex; justify-content:center; gap:2rem; margin:1.5rem 0 2rem;
+    flex-wrap: wrap;
+  }
+  .region-legend span {
+    display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color:var(--text-muted);
+  }
+  .region-legend .dot {
+    width:12px; height:12px; border-radius:50%; display:inline-block;
+  }
+  .dot-caribbean { background: var(--caribbean); }
+  .dot-pacific { background: var(--coral); }
+
+  /* Stat cards row */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s;
+  }
+  .stat-card:hover { transform: translateY(-3px); }
+
+  .stat-card .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--sand);
+  }
+  .stat-card .stat-label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.3rem;
+    line-height: 1.4;
+  }
+  .stat-card.caribbean-accent .stat-value { color: var(--caribbean); }
+  .stat-card.pacific-accent .stat-value { color: var(--coral); }
+
+  /* Section headings */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 2.5rem 0 0.5rem;
+    color: var(--sand);
+  }
+  .section-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+    max-width: 800px;
+    line-height: 1.6;
+  }
+
+  /* Chart grid */
+  .chart-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .chart-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+
+  .chart-card h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--sand);
+    margin-bottom: 0.3rem;
+  }
+
+  .chart-card .chart-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .chart-card canvas {
+    width: 100% !important;
+    max-height: 340px;
+  }
+
+  .chart-card.full-width {
+    grid-column: 1 / -1;
+  }
+
+  /* Key findings */
+  .findings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.25rem;
+    margin: 1.5rem 0;
+  }
+
+  .finding-card {
+    background: var(--card-bg);
+    border-left: 3px solid var(--caribbean);
+    border-radius: 0 12px 12px 0;
+    padding: 1.25rem 1.5rem;
+    backdrop-filter: blur(10px);
+  }
+  .finding-card:nth-child(even) { border-left-color: var(--coral); }
+
+  .finding-card .finding-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: var(--caribbean);
+    margin-bottom: 0.3rem;
+  }
+  .finding-card:nth-child(even) .finding-num { color: var(--coral); }
+
+  .finding-card h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--sand);
+    margin-bottom: 0.4rem;
+  }
+  .finding-card p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Recommendations */
+  .reco-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.25rem;
+    margin: 1.5rem 0 3rem;
+  }
+
+  .reco-card {
+    background: linear-gradient(135deg, rgba(129,178,154,0.12), rgba(0,180,216,0.08));
+    border: 1px solid rgba(129,178,154,0.25);
+    border-radius: 14px;
+    padding: 1.25rem 1.5rem;
+  }
+
+  .reco-card .reco-icon {
+    font-size: 1.6rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .reco-card h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--seafoam);
+    margin-bottom: 0.4rem;
+  }
+
+  .reco-card p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Table styles */
+  .data-table-wrap {
+    overflow-x: auto;
+    margin: 1rem 0 2rem;
+  }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+  .data-table th {
+    background: rgba(0,180,216,0.1);
+    color: var(--sand);
+    padding: 0.7rem 0.9rem;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 2px solid var(--card-border);
+    white-space: nowrap;
+  }
+  .data-table td {
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: var(--text-muted);
+  }
+  .data-table tr:hover td { background: rgba(0,180,216,0.04); }
+  .data-table .highlight { color: var(--sand); font-weight: 600; }
+  .data-table .caribbean-val { color: var(--caribbean); }
+  .data-table .pacific-val { color: var(--coral); }
+
+  .footer {
+    text-align:center;
+    padding:2rem 0;
+    font-size:0.72rem;
+    color:var(--text-muted);
+    border-top:1px solid var(--card-border);
+  }
+
+  @media (max-width: 768px) {
+    .hero h1 { font-size: 1.8rem; }
+    .chart-grid { grid-template-columns: 1fr; }
+    .stat-row { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero">
+    <h1>Plastic Waste in Small Island<br>Developing States</h1>
+    <p class="subtitle">A comparative analysis of plastic waste generation, disposal, and leakage across six SIDS in the Caribbean and Pacific regions — based on IUCN Plastic Waste Free Islands reports (2020 data).</p>
+    <span class="source-tag">Source: IUCN / APWC — Plastic Waste Free Islands Project, 2021</span>
+  </div>
+
+  <div class="region-legend">
+    <span><span class="dot dot-caribbean"></span> Caribbean: Antigua & Barbuda, Grenada, Saint Lucia</span>
+    <span><span class="dot dot-pacific"></span> Pacific: Fiji, Samoa, Vanuatu</span>
+  </div>
+
+  <!-- KEY STATS -->
+  <div class="stat-row">
+    <div class="stat-card caribbean-accent">
+      <div class="stat-value">11,779</div>
+      <div class="stat-label">Tonnes plastic disposed<br>Caribbean (2020)</div>
+    </div>
+    <div class="stat-card pacific-accent">
+      <div class="stat-value">19,281</div>
+      <div class="stat-label">Tonnes plastic disposed<br>Pacific (2020)</div>
+    </div>
+    <div class="stat-card caribbean-accent">
+      <div class="stat-value">3,087</div>
+      <div class="stat-label">Tonnes plastic leaked<br>Caribbean (2020)</div>
+    </div>
+    <div class="stat-card pacific-accent">
+      <div class="stat-value">9,614</div>
+      <div class="stat-label">Tonnes plastic leaked<br>Pacific (2020)</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value">50%</div>
+      <div class="stat-label">Of top 10 plastic items<br>are single-use (both regions)</div>
+    </div>
+  </div>
+
+  <!-- SECTION 1: WASTE INTENSITY BY SECTOR -->
+  <div class="section-title">1. Waste Intensity by Sector</div>
+  <p class="section-desc">How much total waste and plastic waste does each sector generate per person/visitor/vessel per day? Tourism stands out as the most waste-intensive sector in both regions.</p>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Total Waste Disposal Intensity</h3>
+      <div class="chart-subtitle">kg per person/visitor/vessel per day — all waste types</div>
+      <canvas id="chartWasteIntensity"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Plastic Waste Disposal Intensity</h3>
+      <div class="chart-subtitle">kg per person/visitor/vessel per day — plastics only</div>
+      <canvas id="chartPlasticIntensity"></canvas>
+    </div>
+  </div>
+
+  <!-- SECTION 2: PLASTIC DISPOSAL BY SECTOR -->
+  <div class="section-title">2. Plastic Disposal & Leakage by Sector</div>
+  <p class="section-desc">Which sectors contribute most to plastic waste volumes? In the Pacific, commercial and household sectors dominate disposal. In the Caribbean, the household sector leads leakage.</p>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Caribbean — Plastic Leakage by Sector (tonnes/year)</h3>
+      <div class="chart-subtitle">Total leakage: 3,087 tonnes in 2020</div>
+      <canvas id="chartCaribbeanSector"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Pacific — Plastic Leakage by Sector (tonnes/year)</h3>
+      <div class="chart-subtitle">Total leakage: 9,614 tonnes in 2020</div>
+      <canvas id="chartPacificSector"></canvas>
+    </div>
+  </div>
+
+  <!-- SECTION 3: POLYMER TYPES -->
+  <div class="section-title">3. Plastic Leakage by Polymer Type</div>
+  <p class="section-desc">Which polymer types leak the most into the environment? "Other" plastics (multi-layered, polycarbonate) and PET dominate leakage in both regions, but PS (polystyrene/Styrofoam) is a major problem in the Pacific.</p>
+
+  <div class="chart-grid">
+    <div class="chart-card full-width">
+      <h3>Plastic Leakage by Polymer — Caribbean vs Pacific (tonnes/year)</h3>
+      <div class="chart-subtitle">Side-by-side comparison across all 7 polymer categories</div>
+      <canvas id="chartPolymerCompare"></canvas>
+    </div>
+  </div>
+
+  <!-- SECTION 4: POLYMER x SECTOR HEATMAP-STYLE -->
+  <div class="section-title">4. Polymer × Sector Breakdown</div>
+  <p class="section-desc">Detailed leakage data by polymer type and sector for both regions, showing where the biggest intersections of polymer and sector create the most environmental risk.</p>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Caribbean — Leakage by Polymer & Sector</h3>
+      <div class="chart-subtitle">Tonnes per year — stacked by sector</div>
+      <canvas id="chartCaribbeanPolymerSector"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Pacific — Leakage by Polymer & Sector</h3>
+      <div class="chart-subtitle">Tonnes per year — stacked by sector</div>
+      <canvas id="chartPacificPolymerSector"></canvas>
+    </div>
+  </div>
+
+  <!-- SECTION 5: COUNTRY-LEVEL BREAKDOWN -->
+  <div class="section-title">5. Country-Level Plastic Waste (Pacific)</div>
+  <p class="section-desc">Fiji dominates total volumes given its larger population, but Vanuatu has the highest leakage-to-disposal ratio and accounts for over 80% of fisheries plastic leakage in the Pacific.</p>
+
+  <div class="chart-grid">
+    <div class="chart-card">
+      <h3>Pacific Countries — Disposal vs Leakage by Sector</h3>
+      <div class="chart-subtitle">Tonnes per year across Fiji, Samoa, Vanuatu</div>
+      <canvas id="chartPacificCountries"></canvas>
+    </div>
+    <div class="chart-card">
+      <h3>Population & Tourism Context</h3>
+      <div class="chart-subtitle">Populations and tourist arrivals driving waste volumes</div>
+      <canvas id="chartPopTourism"></canvas>
+    </div>
+  </div>
+
+  <!-- DATA TABLE: CARIBBEAN LEAKAGE -->
+  <div class="section-title">6. Detailed Leakage Data Tables</div>
+  <p class="section-desc">Caribbean region plastic leakage by polymer and sector (tonnes/year, 2020)</p>
+
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Polymer</th>
+          <th>Household</th>
+          <th>Commercial</th>
+          <th>Tourism</th>
+          <th>Fisheries</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="highlight">PET (1)</td><td>403</td><td>138</td><td>99</td><td>5.1</td><td class="caribbean-val">645</td></tr>
+        <tr><td class="highlight">HDPE (2)</td><td>243</td><td>98</td><td>41</td><td>2.9</td><td class="caribbean-val">385</td></tr>
+        <tr><td class="highlight">PVC (3)</td><td>122</td><td>85</td><td>4</td><td>0.1</td><td class="caribbean-val">211</td></tr>
+        <tr><td class="highlight">LDPE (4)</td><td>189</td><td>93</td><td>24</td><td>0.1</td><td class="caribbean-val">306</td></tr>
+        <tr><td class="highlight">PP (5)</td><td>217</td><td>110</td><td>21</td><td>2.6</td><td class="caribbean-val">351</td></tr>
+        <tr><td class="highlight">PS (6)</td><td>192</td><td>77</td><td>10</td><td>2.1</td><td class="caribbean-val">281</td></tr>
+        <tr><td class="highlight">Other (7)</td><td>618</td><td>193</td><td>87</td><td>9.8</td><td class="caribbean-val">908</td></tr>
+        <tr style="font-weight:700;"><td class="highlight">TOTAL</td><td>1,984</td><td>794</td><td>287</td><td>22.7</td><td class="caribbean-val">3,088</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="section-desc">Pacific region plastic leakage by polymer and sector (tonnes/year, 2020)</p>
+  <div class="data-table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Polymer</th>
+          <th>Household</th>
+          <th>Commercial</th>
+          <th>Tourism</th>
+          <th>Fisheries</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="highlight">PET (1)</td><td>625</td><td>628</td><td>218</td><td>24.9</td><td class="pacific-val">1,496</td></tr>
+        <tr><td class="highlight">HDPE (2)</td><td>517</td><td>579</td><td>64</td><td>17.0</td><td class="pacific-val">1,177</td></tr>
+        <tr><td class="highlight">PVC (3)</td><td>251</td><td>165</td><td>5</td><td>10.3</td><td class="pacific-val">431</td></tr>
+        <tr><td class="highlight">LDPE (4)</td><td>514</td><td>388</td><td>74</td><td>0.2</td><td class="pacific-val">976</td></tr>
+        <tr><td class="highlight">PP (5)</td><td>333</td><td>291</td><td>85</td><td>24.8</td><td class="pacific-val">734</td></tr>
+        <tr><td class="highlight">PS (6)</td><td>585</td><td>455</td><td>424</td><td>17.4</td><td class="pacific-val">1,481</td></tr>
+        <tr><td class="highlight">Other (7)</td><td>1,469</td><td>1,214</td><td>612</td><td>23.8</td><td class="pacific-val">3,319</td></tr>
+        <tr style="font-weight:700;"><td class="highlight">TOTAL</td><td>4,294</td><td>3,720</td><td>1,482</td><td>118.4</td><td class="pacific-val">9,614</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- SECTION: TOP 10 ITEMS -->
+  <div class="section-title">7. Top 10 Plastic Items Disposed</div>
+  <p class="section-desc">Single-use plastics dominate disposal in both regions. PET beverage bottles, soft plastic packaging, and polystyrene food containers are the most frequently discarded items.</p>
+
+  <div class="chart-grid">
+    <div class="chart-card full-width">
+      <h3>Top 10 Plastic Items — Caribbean vs Pacific (% of total plastic waste)</h3>
+      <div class="chart-subtitle">PET water bottles are #1 in both regions; Styrofoam containers rank much higher in the Pacific</div>
+      <canvas id="chartTop10"></canvas>
+    </div>
+  </div>
+
+  <!-- KEY FINDINGS -->
+  <div class="section-title">5 Key Findings</div>
+  <p class="section-desc">The most critical insights from these IUCN reports.</p>
+
+  <div class="findings-grid">
+    <div class="finding-card">
+      <div class="finding-num">01</div>
+      <h4>Tourism is the Most Waste-Intensive Sector Per Capita</h4>
+      <p>Tourists in the Caribbean generate 6.22 kg of waste per day — 3.5× more than residents (1.77 kg). In the Pacific, tourists produce 1.51 kg/day vs 0.14 kg/day for households — a staggering 10× ratio. Per visitor plastic disposal is 0.45 kg/day in the Caribbean and 0.17 kg/day in the Pacific. With hundreds of thousands of annual visitors, tourism waste overwhelms the limited waste infrastructure of these small islands.</p>
+    </div>
+    <div class="finding-card">
+      <div class="finding-num">02</div>
+      <h4>Household & Commercial Sectors Drive the Largest Total Leakage Volumes</h4>
+      <p>Despite tourism's high per-capita intensity, the sheer number of residents means households contribute the most total leakage: 1,984 tonnes/year in the Caribbean (64% of all leakage) and 4,294 tonnes/year in the Pacific (45%). Combined with commercial waste, these two sectors account for over 83% of all plastic leakage in both regions. Inadequate waste collection — only 56-60% coverage in parts of Grenada, Samoa and Vanuatu — is a key driver.</p>
+    </div>
+    <div class="finding-card">
+      <div class="finding-num">03</div>
+      <h4>"Other" Plastics and PET Are the Most Leaked Polymers</h4>
+      <p>"Other" plastics (multi-layered packaging, polycarbonate) are the #1 leaked polymer in both regions — 908 tonnes in the Caribbean and 3,319 tonnes in the Pacific — because they cannot be recycled. PET is the #2 polymer leaked overall, driven by beverage bottles (water and soft drinks) that represent 18-23% of all plastic waste. PS/Styrofoam is a disproportionately large problem in the Pacific (1,481 tonnes leaked) compared to the Caribbean (281 tonnes).</p>
+    </div>
+    <div class="finding-card">
+      <div class="finding-num">04</div>
+      <h4>Caribbean Islands Dispose of Far More Waste Per Person Than Pacific Islands</h4>
+      <p>Caribbean SIDS dispose of 1.77 kg/person/day of total waste compared to just 0.14 kg/person/day in the Pacific — nearly 13 times more. This correlates with higher GDP per capita: Antigua and Barbuda is a high-income economy, while Vanuatu is lower-middle-income. Despite lower per-capita rates, the Pacific has higher total leakage (9,614 vs 3,087 tonnes) due to larger populations and 50-58% of waste being completely unmanaged in Samoa and Vanuatu.</p>
+    </div>
+    <div class="finding-card">
+      <div class="finding-num">05</div>
+      <h4>Virtually No Recycling Infrastructure Exists — The Tap Is Wide Open</h4>
+      <p>Only 59 tonnes of plastic were recycled across all three Caribbean countries in 2020 — just 0.5% of the 11,779 tonnes disposed. Samoa and Vanuatu have zero active plastic recyclers. These islands import vast quantities of plastic (14,595 tonnes Caribbean; 43,316 tonnes Pacific) with almost no pathways to process it. A Container Deposit Levy at 80% compliance could prevent up to 451 tonnes of PET/HDPE leakage in the Caribbean and 1,033 tonnes of PET leakage in the Pacific.</p>
+    </div>
+  </div>
+
+  <!-- RECOMMENDATIONS -->
+  <div class="section-title">Recommendations to Fight Plastic Waste</div>
+  <p class="section-desc">Evidence-based actions that could meaningfully reduce plastic pollution in SIDS.</p>
+
+  <div class="reco-grid">
+    <div class="reco-card">
+      <div class="reco-icon">🏷️</div>
+      <h4>1. Implement Container Deposit Levies (CDLs)</h4>
+      <p>A CDL targeting PET and HDPE bottles at 80% compliance could divert ~451 tonnes/yr in the Caribbean and ~2,200 tonnes/yr in the Pacific from leakage. This is the single highest-impact, most proven policy intervention available. Regional coordination through OECS (Caribbean) and SPREP (Pacific) could create economies of scale for recyclable material exports.</p>
+    </div>
+    <div class="reco-card">
+      <div class="reco-icon">🚢</div>
+      <h4>2. Tax and Manage Tourism Waste at Source</h4>
+      <p>Expand environmental levies on cruise passengers and air arrivals (Saint Lucia's XCD 4.08/visitor model). Mandate waste segregation at all hotels, resorts, ports and airports. Centrally manage cruise ship waste through regional bodies. Adopt the "Palau Pledge" model — tourists sign environmental commitments upon arrival. Ban single-use plastics in tourism facilities.</p>
+    </div>
+    <div class="reco-card">
+      <div class="reco-icon">♻️</div>
+      <h4>3. Build Regional Recycling Hubs</h4>
+      <p>Individual islands cannot achieve economies of scale for recycling. Establish OECS and SPREP-coordinated regional recycling hubs where collected PET, HDPE and other recyclables are aggregated across islands for export. The Moana Taka Partnership (Pacific) already provides free shipping for recyclable waste — extend this model and pair it with collection infrastructure.</p>
+    </div>
+    <div class="reco-card">
+      <div class="reco-icon">🚫</div>
+      <h4>4. Expand Single-Use Plastic Bans to Target "Other" Polymers</h4>
+      <p>Existing bans focus on bags and Styrofoam, but "Other" plastics (multi-layered packaging) are the #1 leaked polymer. Extend bans to multi-layered sachets and non-recyclable flexible packaging. Incentivise alternatives through zero-tariff imports of biodegradable containers (Saint Lucia's approach). Push for extended producer responsibility legislation.</p>
+    </div>
+    <div class="reco-card">
+      <div class="reco-icon">🗑️</div>
+      <h4>5. Achieve Universal Waste Collection Coverage</h4>
+      <p>With 40-50% of waste unmanaged in parts of Grenada, Samoa and Vanuatu, expanding collection services is foundational. Implement dry-wet waste segregation paired with industrial composting (organics are 35-53% of waste). Prepaid bag systems (Vanuatu model) can fund collection. Prioritise peri-urban and rural areas where most unmanaged waste leaks into waterways.</p>
+    </div>
+    <div class="reco-card">
+      <div class="reco-icon">🐟</div>
+      <h4>6. Tackle Fisheries Plastic Through Gear ID & Observer Programs</h4>
+      <p>Mandate gear identification and recovery as a fishing licence requirement. Develop fishing-gear recapture schemes that incentivise fishers to bring back damaged gear. Deploy fisheries observers (Pacific model) to monitor waste dumping. Provide port facilities for net repair and storage. Vanuatu's 82% share of Pacific fisheries leakage highlights the urgent need for port waste infrastructure.</p>
+    </div>
+    <div class="reco-card">
+      <div class="reco-icon">📊</div>
+      <h4>7. Invest in Data Infrastructure & Education</h4>
+      <p>Most islands lack weighbridges, waste tracking and import/export monitoring. Implement 10-digit harmonised customs codes for plastics. Include waste questions in national censuses. Launch intensive education campaigns for residents (littering), fishers (ghost gear impacts) and tourists (pre-arrival environmental briefings). Data enables better policy; education enables behaviour change.</p>
+    </div>
+    <div class="reco-card">
+      <div class="reco-icon">👶</div>
+      <h4>8. Address the Nappy/Diaper Crisis</h4>
+      <p>Hygiene waste (nappies/diapers and sanitary items) accounts for 33.7% of all Pacific plastic waste — a staggering 9,568 tonnes/year. In the Caribbean, nappies are a top household plastic in Grenada and Saint Lucia. Promote reusable cloth nappies through subsidies and awareness programmes. This single intervention could dramatically reduce both disposal volumes and landfill pressure.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    Data from: IUCN / Asia Pacific Waste Consultants — Plastic Waste Free Islands Project (2021). Caribbean & Pacific Regional Reports.<br>
+    Analysis of 2020 data for Antigua & Barbuda, Grenada, Saint Lucia (Caribbean) and Fiji, Samoa, Vanuatu (Pacific).
+  </div>
+</div>
+
+<script>
+// Chart.js global config
+Chart.defaults.color = '#9aa5b4';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyleWidth = 10;
+Chart.defaults.plugins.legend.labels.padding = 14;
+
+const caribbean = '#00b4d8';
+const pacific = '#e07a5f';
+const caribbeanLight = 'rgba(0,180,216,0.6)';
+const pacificLight = 'rgba(224,122,95,0.6)';
+const sectorColors = {
+  household: '#00b4d8',
+  commercial: '#81b29a',
+  tourism: '#f2cc8f',
+  fisheries: '#e07a5f'
+};
+
+// 1. Total waste intensity
+new Chart(document.getElementById('chartWasteIntensity'), {
+  type: 'bar',
+  data: {
+    labels: ['Household\n(kg/person/day)', 'Commercial\n(kg/employee/day)', 'Tourism\n(kg/visitor/day)', 'Fisheries\n(kg/vessel/day)'],
+    datasets: [
+      { label: 'Caribbean', data: [1.77, 5.96, 6.22, 2.13], backgroundColor: caribbean, borderRadius: 4 },
+      { label: 'Pacific', data: [0.14, 0.23, 1.51, 0.93], backgroundColor: pacific, borderRadius: 4 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'kg per unit per day' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// 2. Plastic waste intensity
+new Chart(document.getElementById('chartPlasticIntensity'), {
+  type: 'bar',
+  data: {
+    labels: ['Household\n(kg/person/day)', 'Commercial\n(kg/employee/day)', 'Tourism\n(kg/visitor/day)', 'Fisheries\n(kg/vessel/day)'],
+    datasets: [
+      { label: 'Caribbean', data: [0.17, 0.12, 0.45, 0.35], backgroundColor: caribbean, borderRadius: 4 },
+      { label: 'Pacific', data: [0.01, 0.04, 0.17, 0.24], backgroundColor: pacific, borderRadius: 4 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'kg plastic per unit per day' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// 3. Caribbean sector leakage (doughnut)
+new Chart(document.getElementById('chartCaribbeanSector'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Household (1,984t)', 'Commercial (794t)', 'Tourism (287t)', 'Fisheries (23t)'],
+    datasets: [{
+      data: [1984, 794, 287, 22.7],
+      backgroundColor: [sectorColors.household, sectorColors.commercial, sectorColors.tourism, sectorColors.fisheries],
+      borderWidth: 0,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '55%',
+    plugins: {
+      legend: { position: 'bottom' },
+      tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed} tonnes (${(ctx.parsed/3087.7*100).toFixed(1)}%)` } }
+    }
+  }
+});
+
+// 4. Pacific sector leakage (doughnut)
+new Chart(document.getElementById('chartPacificSector'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Household (4,294t)', 'Commercial (3,720t)', 'Tourism (1,482t)', 'Fisheries (118t)'],
+    datasets: [{
+      data: [4294.3, 3720.1, 1481.6, 118.4],
+      backgroundColor: [sectorColors.household, sectorColors.commercial, sectorColors.tourism, sectorColors.fisheries],
+      borderWidth: 0,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    cutout: '55%',
+    plugins: {
+      legend: { position: 'bottom' },
+      tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed} tonnes (${(ctx.parsed/9614.4*100).toFixed(1)}%)` } }
+    }
+  }
+});
+
+// 5. Polymer comparison bar chart
+const polymerLabels = ['PET (1)', 'HDPE (2)', 'PVC (3)', 'LDPE (4)', 'PP (5)', 'PS (6)', 'Other (7)'];
+new Chart(document.getElementById('chartPolymerCompare'), {
+  type: 'bar',
+  data: {
+    labels: polymerLabels,
+    datasets: [
+      { label: 'Caribbean Leakage', data: [645, 385, 211, 306, 351, 281, 908], backgroundColor: caribbean, borderRadius: 4 },
+      { label: 'Pacific Leakage', data: [1496, 1177, 431, 976, 734, 1481, 3319], backgroundColor: pacific, borderRadius: 4 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'Tonnes leaked per year' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// 6. Caribbean polymer x sector stacked
+new Chart(document.getElementById('chartCaribbeanPolymerSector'), {
+  type: 'bar',
+  data: {
+    labels: polymerLabels,
+    datasets: [
+      { label: 'Household', data: [403, 243, 122, 189, 217, 192, 618], backgroundColor: sectorColors.household, borderRadius: 2 },
+      { label: 'Commercial', data: [138, 98, 85, 93, 110, 77, 193], backgroundColor: sectorColors.commercial, borderRadius: 2 },
+      { label: 'Tourism', data: [99, 41, 4, 24, 21, 10, 87], backgroundColor: sectorColors.tourism, borderRadius: 2 },
+      { label: 'Fisheries', data: [5.1, 2.9, 0.1, 0.1, 2.6, 2.1, 9.8], backgroundColor: sectorColors.fisheries, borderRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'Tonnes leaked/year' } }
+    }
+  }
+});
+
+// 7. Pacific polymer x sector stacked
+new Chart(document.getElementById('chartPacificPolymerSector'), {
+  type: 'bar',
+  data: {
+    labels: polymerLabels,
+    datasets: [
+      { label: 'Household', data: [625.3, 517.1, 251.2, 513.6, 333.3, 584.7, 1469.1], backgroundColor: sectorColors.household, borderRadius: 2 },
+      { label: 'Commercial', data: [627.5, 579.0, 164.5, 388.4, 291.0, 455.2, 1214.4], backgroundColor: sectorColors.commercial, borderRadius: 2 },
+      { label: 'Tourism', data: [218.0, 63.5, 4.9, 73.8, 84.9, 424.1, 612.3], backgroundColor: sectorColors.tourism, borderRadius: 2 },
+      { label: 'Fisheries', data: [24.9, 17.0, 10.3, 0.2, 24.8, 17.4, 23.8], backgroundColor: sectorColors.fisheries, borderRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'Tonnes leaked/year' } }
+    }
+  }
+});
+
+// 8. Pacific countries disposal vs leakage
+new Chart(document.getElementById('chartPacificCountries'), {
+  type: 'bar',
+  data: {
+    labels: ['Samoa\nDisposal', 'Samoa\nLeakage', 'Vanuatu\nDisposal', 'Vanuatu\nLeakage', 'Fiji\nDisposal', 'Fiji\nLeakage'],
+    datasets: [
+      { label: 'Household', data: [955, 1014, 998, 1341, 5876, 1939], backgroundColor: sectorColors.household, borderRadius: 2 },
+      { label: 'Commercial', data: [1157, 614, 716, 901, 6881, 2205], backgroundColor: sectorColors.commercial, borderRadius: 2 },
+      { label: 'Tourism', data: [258, 234, 246, 515, 2117, 733], backgroundColor: sectorColors.tourism, borderRadius: 2 },
+      { label: 'Fisheries', data: [1, 1, 66, 97, 9, 21], backgroundColor: sectorColors.fisheries, borderRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'Tonnes/year' } }
+    }
+  }
+});
+
+// 9. Population & tourism context
+new Chart(document.getElementById('chartPopTourism'), {
+  type: 'bar',
+  data: {
+    labels: ['Antigua &\nBarbuda', 'Grenada', 'Saint Lucia', 'Fiji', 'Samoa', 'Vanuatu'],
+    datasets: [
+      {
+        label: 'Population',
+        data: [97929, 112523, 183627, 884887, 198410, 307145],
+        backgroundColor: ['rgba(0,180,216,0.7)','rgba(0,180,216,0.7)','rgba(0,180,216,0.7)','rgba(224,122,95,0.7)','rgba(224,122,95,0.7)','rgba(224,122,95,0.7)'],
+        borderRadius: 4,
+        yAxisID: 'y'
+      },
+      {
+        label: 'Tourist Arrivals (2019)',
+        data: [1050000, 540000, 760000, 894389, 181000, 116000],
+        backgroundColor: ['rgba(242,204,143,0.7)','rgba(242,204,143,0.7)','rgba(242,204,143,0.7)','rgba(242,204,143,0.7)','rgba(242,204,143,0.7)','rgba(242,204,143,0.7)'],
+        borderRadius: 4,
+        yAxisID: 'y'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      y: { grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: 'People' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// 10. Top 10 items
+new Chart(document.getElementById('chartTop10'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'PET Water Bottles',
+      'PET Other Beverages',
+      'Soft Packaging (LDPE)',
+      'Soft Packaging (Other)',
+      'Other Single-Use',
+      'Shopping Bags (HDPE)',
+      'Garbage Bags (HDPE)',
+      'Container Lids (PP)',
+      'Multi-layer Containers',
+      'Styrofoam Food (PS)'
+    ],
+    datasets: [
+      { label: 'Caribbean %', data: [9.2, 9.2, 7.7, 7.0, 4.9, 3.6, 3.0, 2.5, 2.4, 0], backgroundColor: caribbean, borderRadius: 4 },
+      { label: 'Pacific %', data: [11.3, 0, 6.2, 7.2, 7.8, 0, 3.5, 0, 1.9, 5.8], backgroundColor: pacific, borderRadius: 4 }
+    ]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { grid: { color: 'rgba(255,255,255,0.05)' }, title: { display: true, text: '% of total plastic waste' } },
+      y: { grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>
